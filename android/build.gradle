@@ -1,0 +1,73 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+
+buildscript {
+  ext {
+    buildToolsVersion = "35.0.0" 
+    minSdkVersion = 24          
+    compileSdkVersion = 35
+    targetSdkVersion = 35
+    kotlinVersion = '1.9.24'     
+  }
+  repositories {
+    google()
+    mavenCentral()
+  }
+  dependencies {
+    classpath('com.android.tools.build:gradle')
+    classpath('com.facebook.react:react-native-gradle-plugin')
+    classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
+    classpath("de.undercouch:gradle-download-task:5.0.1")
+  }
+}
+
+def reactNativeAndroidDir = new File(
+  providers.exec {
+    workingDir(rootDir)
+    commandLine("node", "--print", "require.resolve('react-native/package.json')")
+  }.standardOutput.asText.get().trim(),
+  "../android"
+)
+
+allprojects {
+  subprojects {
+    afterEvaluate { project ->
+        if (project.plugins.hasPlugin('com.android.library')) {
+            android {
+                packagingOptions {
+                    resources {
+                        excludes += [
+                            'META-INF/LICENSE.md',
+                            'META-INF/LICENSE-notice.md',
+                            'META-INF/LICENSE-notice',
+                            'META-INF/LICENSE',
+                            'META-INF/NOTICE.md',
+                            'META-INF/NOTICE',
+                            'META-INF/DEPENDENCIES',
+                            'META-INF/INDEX.LIST',
+                            'META-INF/io.netty.versions.properties'
+                        ]
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+  repositories {
+    maven {
+      // All of React Native (JS, Obj-C sources, Android binaries) is installed from npm
+      url(reactNativeAndroidDir)
+    }
+
+    google()
+    maven {
+      url("$rootDir/../node_modules/detox/Detox-android")
+    }
+    mavenCentral()
+    maven { url 'https://www.jitpack.io' }
+  }
+}
+
+// apply plugin: "expo-root-project"
+apply plugin: "com.facebook.react.rootproject"
